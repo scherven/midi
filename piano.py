@@ -20,6 +20,7 @@ class VideoPolygonMask:
             # Add point to current polygon
             self.current_polygon.append([x, y])
             self.drawing = True
+            need_frame_update = True
             
         elif event == cv2.EVENT_RBUTTONDOWN:
             # Finish polygon (right click)
@@ -29,6 +30,7 @@ class VideoPolygonMask:
                 self.frame_polygons[self.current_frame_num] = self.polygon_points.copy()
             self.current_polygon = []
             self.drawing = False
+            need_frame_update = True
     
     def get_polygon_for_frame(self, frame_num):
         """Get the polygon for a specific frame (uses last defined polygon if not set)"""
@@ -278,7 +280,7 @@ class VideoPolygonMask:
 
 if __name__ == "__main__":
     # Replace with your video path
-    video_path = "test.mov"
+    video_path = "attempt13.mov"
     output_path = "masked_output.mp4"
     
     masker = VideoPolygonMask(video_path, output_path)
