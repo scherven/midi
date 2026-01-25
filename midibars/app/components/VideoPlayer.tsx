@@ -165,7 +165,7 @@ export default function MuxPlayerComponent({
             draggable={false}
             style={{
               userSelect: "none",
-              opacity: 0.4,
+              opacity: isDragging == "side" ? 0.4 : 0.0,
               position: "absolute",
               top: 0,
               left: 0,
