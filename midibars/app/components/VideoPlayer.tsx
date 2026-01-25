@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 
 interface MuxPlayerComponentProps {
@@ -18,18 +18,20 @@ export default function MuxPlayerComponent({
   const [currentCorner, setCurrentCorner] = useState("");
   const [currentSide, setCurrentSide] = useState("");
   const [rotateStart, setRotateStart] = useState({ angle: 0, x: 0, y: 0 });
+  const [hasLoadedState, setHasLoadedState] = useState(false);
+
   const containerRef = useRef(null);
 
   const imageUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg?time=${0}`;
 
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
-    setSize({
-      x: 0,
-      y: 0,
+    setSize((prev) => ({
+      x: prev.x,
+      y: prev.y,
       width: img.naturalWidth,
       height: img.naturalHeight,
-    });
+    }));
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -139,6 +141,45 @@ export default function MuxPlayerComponent({
     setRotateStart({ angle: startAngle - rotation, x: centerX, y: centerY });
     setIsDragging("rotate");
   };
+
+  useEffect(() => {
+    const loadState = async () => {
+      try {
+        const result = window.localStorage.getItem("image-editor-state");
+        if (result) {
+          const savedState = JSON.parse(result);
+          setScale(savedState.scale ?? 1);
+          setRotation(savedState.rotation ?? 0);
+          setSize(savedState.size ?? { x: 0, y: 0, width: 400, height: 400 });
+          setCrop(savedState.crop ?? { n: 0, e: 0, s: 0, w: 0 });
+          setHasLoadedState(true);
+        }
+      } catch (error) {
+        console.log("No saved state found");
+        setHasLoadedState(true);
+      }
+    };
+    loadState();
+  }, []);
+
+  useEffect(() => {
+    const saveState = async () => {
+      try {
+        window.localStorage.setItem(
+          "image-editor-state",
+          JSON.stringify({
+            scale,
+            rotation,
+            size,
+            crop,
+          }),
+        );
+      } catch (error) {
+        console.error("Failed to save state:", error);
+      }
+    };
+    saveState();
+  }, [scale, rotation, size, crop]);
 
   return (
     <div onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
