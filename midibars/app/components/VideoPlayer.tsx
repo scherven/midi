@@ -14,6 +14,8 @@ export default function MuxPlayerComponent({
   const [rotation, setRotation] = useState(0);
   const [size, setSize] = useState({ x: 0, y: 0, width: 400, height: 400 });
   const [isDragging, setIsDragging] = useState("");
+  const [currentCorner, setCurrentCorner] = useState("");
+  const [currentSide, setCurrentSide] = useState("");
   const [rotateStart, setRotateStart] = useState({ angle: 0, x: 0, y: 0 });
   const containerRef = useRef(null);
 
@@ -44,11 +46,56 @@ export default function MuxPlayerComponent({
         x: prev.x + e.movementX,
         y: prev.y + e.movementY,
       }));
+    } else if (isDragging === "corner" && currentCorner) {
+      setSize((prev) => {
+        let newX = prev.x;
+        let newY = prev.y;
+        let newWidth = prev.width;
+        let newHeight = prev.height;
+
+        if (currentCorner.includes("n")) {
+          newHeight -= e.movementY;
+          newY += e.movementY;
+        }
+        if (currentCorner.includes("s")) {
+          newHeight += e.movementY;
+        }
+        if (currentCorner.includes("w")) {
+          newWidth -= e.movementX;
+          newX += e.movementX;
+        }
+        if (currentCorner.includes("e")) {
+          newWidth += e.movementX;
+        }
+
+        return {
+          x: newX,
+          y: newY,
+          width: newWidth,
+          height: newHeight,
+        };
+      });
+    } else if (isDragging === "side" && currentSide) {
+      let { x, y, width, height } = size;
+      if (currentSide === "n") {
+        height -= e.movementY;
+        y += e.movementY;
+      } else if (currentSide === "s") {
+        height += e.movementY;
+      } else if (currentSide === "w") {
+        width -= e.movementX;
+        x += e.movementX;
+      } else if (currentSide === "e") {
+        width += e.movementX;
+      }
+      setSize({ x, y, width, height });
     }
   };
 
   const handleMouseUp = (e: React.MouseEvent) => {
     setIsDragging("");
+    setCurrentCorner("");
+    setCurrentSide("");
   };
 
   const handlePan = (action: string, e: React.MouseEvent) => {
@@ -56,9 +103,17 @@ export default function MuxPlayerComponent({
     setIsDragging("move");
   };
 
-  const handleResize = (corner: string, e: React.MouseEvent) => {};
+  const handleResize = (corner: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentCorner(corner);
+    setIsDragging("corner");
+  };
 
-  const handleCrop = (side: string, e: React.MouseEvent) => {};
+  const handleCrop = (side: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentSide(side);
+    setIsDragging("side");
+  };
 
   const handleRotate = (action: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -81,7 +136,10 @@ export default function MuxPlayerComponent({
       >
         <div
           style={{
-            transform: `rotate(${rotation}deg)`,
+            position: "relative",
+            width: `${size.width}px`,
+            height: `${size.height}px`,
+            transform: `translate(${size.x}px, ${size.y}px) rotate(${rotation}deg)`,
             transformOrigin: "center",
           }}
         >
@@ -93,7 +151,6 @@ export default function MuxPlayerComponent({
             draggable={false}
             onLoad={handleImageLoad}
             style={{
-              transform: `translate(${size.x}px, ${size.y}px)`,
               userSelect: "none",
             }}
           />
@@ -105,13 +162,10 @@ export default function MuxPlayerComponent({
               top: 0,
               width: `${size.width}px`,
               height: `${size.height}px`,
-              transform: `translate(${size.x}px, ${size.y}px)`,
               pointerEvents: isDragging ? "none" : "auto",
             }}
             onMouseDown={(e) => handlePan("move", e)}
           >
-            <div className="absolute inset-0 bg-blue-500 opacity-10"></div>
-
             <div
               className="absolute left-1/2 -translate-x-1/2 cursor-grab active:cursor-grabbing"
               style={{ top: "-40px" }}
