@@ -48,60 +48,58 @@ export default function MuxPlayerComponent({
         y: prev.y + e.movementY,
       }));
     } else if (isDragging === "corner" && currentCorner) {
-      setSize((prev) => {
-        let newX = prev.x;
-        let newY = prev.y;
-        let newWidth = prev.width;
-        let newHeight = prev.height;
-
-        if (currentCorner.includes("n")) {
-          newHeight -= e.movementY;
-          newY += e.movementY;
-        }
-        if (currentCorner.includes("s")) {
-          newHeight += e.movementY;
-        }
-        if (currentCorner.includes("w")) {
-          newWidth -= e.movementX;
-          newX += e.movementX;
-        }
-        if (currentCorner.includes("e")) {
-          newWidth += e.movementX;
-        }
-
-        return {
-          x: newX,
-          y: newY,
-          width: newWidth,
-          height: newHeight,
-        };
-      });
+      //   setSize((prev) => {
+      //     const newSize = { ...prev };
+      //     if (currentCorner.includes("e")) {
+      //       newSize.width = Math.max(50, prev.width + e.movementX);
+      //     }
+      //     if (currentCorner.includes("w")) {
+      //       const delta = -e.movementX;
+      //       newSize.width = Math.max(50, prev.width + delta);
+      //       newSize.x = prev.x - delta;
+      //     }
+      //     if (currentCorner.includes("s")) {
+      //       newSize.height = Math.max(50, prev.height + e.movementY);
+      //     }
+      //     if (currentCorner.includes("n")) {
+      //       const delta = -e.movementY;
+      //       newSize.height = Math.max(50, prev.height + delta);
+      //       newSize.y = prev.y - delta;
+      //     }
+      //     return newSize;
+      //   });
     } else if (isDragging === "side" && currentSide) {
+      const rad = (rotation * Math.PI) / 180;
+      const cos = Math.cos(rad);
+      const sin = Math.sin(rad);
+
+      const rotatedX = e.movementX * cos + e.movementY * sin;
+      const rotatedY = -e.movementX * sin + e.movementY * cos;
+
       setCrop((prev) => {
         const newCrop = { ...prev };
 
         if (currentSide === "n") {
           newCrop.n = Math.max(
             0,
-            Math.min(size.height - prev.s, prev.n + e.movementY),
+            Math.min(size.height - prev.s, prev.n + rotatedY),
           );
         } else if (currentSide === "s") {
           newCrop.s = Math.max(
             0,
-            Math.min(size.height - prev.n, prev.s - e.movementY),
+            Math.min(size.height - prev.n, prev.s - rotatedY),
           );
         } else if (currentSide === "w") {
           newCrop.w = Math.max(
             0,
-            Math.min(size.width - prev.e, prev.w + e.movementX),
+            Math.min(size.width - prev.e, prev.w + rotatedX),
           );
         } else if (currentSide === "e") {
           newCrop.e = Math.max(
             0,
-            Math.min(size.width - prev.w, prev.e - e.movementX),
+            Math.min(size.width - prev.w, prev.e - rotatedX),
           );
         }
-        console.log(newCrop, e.movementX, e.movementY);
 
         return newCrop;
       });
