@@ -1,0 +1,3 @@
+# TODO
+- [ ] snap rotate
+- [ ] resize
