@@ -17,7 +17,7 @@ export default async function WatchPage({
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px" }}>
-      <Link
+      {/* <Link
         href="/upload"
         style={{
           display: "inline-block",
@@ -27,32 +27,7 @@ export default async function WatchPage({
         }}
       >
         ← Back to Library
-      </Link>
-
-      <h1>Watch Video</h1>
-
-      {/* Video Info */}
-      <div style={{ marginBottom: "20px" }}>
-        <p>
-          <strong>Asset ID:</strong> {asset.id}
-        </p>
-        <p>
-          <strong>Status:</strong>{" "}
-          <span
-            style={{
-              color: asset.status === "ready" ? "green" : "orange",
-              fontWeight: "500",
-            }}
-          >
-            {asset.status}
-          </span>
-        </p>
-        {asset.duration && (
-          <p>
-            <strong>Duration:</strong> {Math.round(asset.duration)} seconds
-          </p>
-        )}
-      </div>
+      </Link> */}
 
       {asset.playback_ids?.[0]?.id ? (
         <VideoPlayer playbackId={asset.playback_ids[0].id} />

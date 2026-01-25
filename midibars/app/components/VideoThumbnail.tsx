@@ -7,7 +7,7 @@ export default function VideoThumbnail({ asset }: { asset: any }) {
   return (
     <Link
       key={asset.id}
-      href={`/watch/${asset.id}`}
+      href={`/edit/${asset.id}`}
       style={{ textDecoration: "none", color: "inherit" }}
     >
       <div
@@ -27,7 +27,6 @@ export default function VideoThumbnail({ asset }: { asset: any }) {
           e.currentTarget.style.boxShadow = "none";
         }}
       >
-        {/* Thumbnail */}
         {asset.playback_ids?.[0]?.id && (
           <Image
             src={`https://image.mux.com/${asset.playback_ids[0].id}/thumbnail.jpg?width=400&height=225&fit_mode=smartcrop`}
@@ -37,7 +36,6 @@ export default function VideoThumbnail({ asset }: { asset: any }) {
           />
         )}
 
-        {/* Video Info */}
         <div>
           <h3 style={{ margin: "0 0 8px 0", fontSize: "16px" }}>{asset.id}</h3>
           <div style={{ fontSize: "14px", color: "#666" }}>
