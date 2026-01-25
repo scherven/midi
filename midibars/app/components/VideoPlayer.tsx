@@ -13,6 +13,7 @@ export default function MuxPlayerComponent({
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [size, setSize] = useState({ x: 0, y: 0, width: 400, height: 400 });
+  const [crop, setCrop] = useState({ n: 0, e: 0, s: 0, w: 0 });
   const [isDragging, setIsDragging] = useState("");
   const [currentCorner, setCurrentCorner] = useState("");
   const [currentSide, setCurrentSide] = useState("");
@@ -76,19 +77,34 @@ export default function MuxPlayerComponent({
         };
       });
     } else if (isDragging === "side" && currentSide) {
-      let { x, y, width, height } = size;
-      if (currentSide === "n") {
-        height -= e.movementY;
-        y += e.movementY;
-      } else if (currentSide === "s") {
-        height += e.movementY;
-      } else if (currentSide === "w") {
-        width -= e.movementX;
-        x += e.movementX;
-      } else if (currentSide === "e") {
-        width += e.movementX;
-      }
-      setSize({ x, y, width, height });
+      setCrop((prev) => {
+        const newCrop = { ...prev };
+
+        if (currentSide === "n") {
+          newCrop.n = Math.max(
+            0,
+            Math.min(size.height - prev.s, prev.n + e.movementY),
+          );
+        } else if (currentSide === "s") {
+          newCrop.s = Math.max(
+            0,
+            Math.min(size.height - prev.n, prev.s - e.movementY),
+          );
+        } else if (currentSide === "w") {
+          newCrop.w = Math.max(
+            0,
+            Math.min(size.width - prev.e, prev.w + e.movementX),
+          );
+        } else if (currentSide === "e") {
+          newCrop.e = Math.max(
+            0,
+            Math.min(size.width - prev.w, prev.e - e.movementX),
+          );
+        }
+        console.log(newCrop, e.movementX, e.movementY);
+
+        return newCrop;
+      });
     }
   };
 
@@ -145,6 +161,21 @@ export default function MuxPlayerComponent({
         >
           <Image
             src={imageUrl}
+            alt="Editor Background"
+            width={size.width}
+            height={size.height}
+            draggable={false}
+            style={{
+              userSelect: "none",
+              opacity: 0.4,
+              position: "absolute",
+              top: 0,
+              left: 0,
+            }}
+          />
+
+          <Image
+            src={imageUrl}
             alt="Editor"
             width={size.width}
             height={size.height}
@@ -152,16 +183,17 @@ export default function MuxPlayerComponent({
             onLoad={handleImageLoad}
             style={{
               userSelect: "none",
+              clipPath: `inset(${crop.n}px ${crop.e}px ${crop.s}px ${crop.w}px)`,
             }}
           />
 
           <div
             className="absolute border-2 border-blue-500 cursor-move"
             style={{
-              left: 0,
-              top: 0,
-              width: `${size.width}px`,
-              height: `${size.height}px`,
+              left: `${crop.w}px`,
+              top: `${crop.n}px`,
+              width: `${size.width - crop.w - crop.e}px`,
+              height: `${size.height - crop.n - crop.s}px`,
               pointerEvents: isDragging ? "none" : "auto",
             }}
             onMouseDown={(e) => handlePan("move", e)}
